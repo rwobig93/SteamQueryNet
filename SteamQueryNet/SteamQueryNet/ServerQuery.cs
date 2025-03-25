@@ -21,28 +21,22 @@ namespace SteamQueryNet
         private ushort _port;
         private int _currentChallenge;
 
-        internal virtual IUdpClient UdpClient { get; private set; }
+        protected virtual IUdpClient UdpClient { get; private set; }
 
         /// <summary>
         /// Reflects the udp client connection state.
         /// </summary>
-        public bool IsConnected
-        {
-            get
-            {
-                return UdpClient.IsConnected;
-            }
-        }
+        public bool IsConnected => UdpClient.IsConnected;
 
         /// <summary>
-        /// Amount of time in miliseconds to terminate send operation if the server won't respond.
+        /// Amount of time in milliseconds to terminate send operation if the server won't respond. Defaults to 5000 (5s).
         /// </summary>
-        public int SendTimeout { get; set; }
+        public int SendTimeout { get; set; } = 5000;
 
         /// <summary>
-        /// Amount of time in miliseconds to terminate receive operation if the server won't respond.
+        /// Amount of time in milliseconds to terminate receive operation if the server won't respond. Defaults to 5000 (5s).
         /// </summary>
-        public int ReceiveTimeout { get; set; }
+        public int ReceiveTimeout { get; set; } = 5000;
 
         /// <summary>
         /// Creates a new instance of ServerQuery with given UDPClient and remote endpoint.
@@ -60,50 +54,6 @@ namespace SteamQueryNet
         /// </summary>
         public ServerQuery() { }
 
-        /// <summary>
-        /// Creates a new ServerQuery instance for Steam Server Query Operations.
-        /// </summary>
-        /// <param name="serverAddress">IPAddress or HostName of the server that queries will be sent.</param>
-        /// <param name="port">Port of the server that queries will be sent.</param>
-        public ServerQuery(string serverAddress, ushort port)
-        {
-            PrepareAndConnect(serverAddress, port);
-        }
-
-        /// <summary>
-        /// Creates a new ServerQuery instance for Steam Server Query Operations.
-        /// </summary>
-        /// <param name="serverAddressAndPort">IPAddress or HostName of the server and port separated by a colon(:) or a comma(,).</param>
-        public ServerQuery(string serverAddressAndPort)
-        {
-            (string serverAddress, ushort port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
-            PrepareAndConnect(serverAddress, port);
-        }
-
-        /// <summary>
-        /// Creates a new instance of ServerQuery with the given Local IPEndpoint.
-        /// </summary>
-        /// <param name="customLocalIPEndpoint">Desired local IPEndpoint to bound.</param>
-        /// <param name="serverAddressAndPort">IPAddress or HostName of the server and port separated by a colon(:) or a comma(,).</param>
-        public ServerQuery(IPEndPoint customLocalIPEndpoint, string serverAddressAndPort)
-        {
-            UdpClient = new UdpWrapper(customLocalIPEndpoint, SendTimeout, ReceiveTimeout);
-            (string serverAddress, ushort port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
-            PrepareAndConnect(serverAddress, port);
-        }
-
-        /// <summary>
-        /// Creates a new instance of ServerQuery with the given Local IPEndpoint.
-        /// </summary>
-        /// <param name="customLocalIPEndpoint">Desired local IPEndpoint to bound.</param>
-        /// <param name="serverAddress">IPAddress or HostName of the server that queries will be sent.</param>
-        /// <param name="port">Port of the server that queries will be sent.</param>
-        public ServerQuery(IPEndPoint customLocalIPEndpoint, string serverAddress, ushort port)
-        {
-            UdpClient = new UdpWrapper(customLocalIPEndpoint, SendTimeout, ReceiveTimeout);
-            PrepareAndConnect(serverAddress, port);
-        }
-
         /// <inheritdoc/>
         public IServerQuery Connect(string serverAddress, ushort port)
         {
@@ -114,24 +64,24 @@ namespace SteamQueryNet
         /// <inheritdoc/>
         public IServerQuery Connect(string serverAddressAndPort)
         {
-            (string serverAddress, ushort port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
+            var (serverAddress, port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
             PrepareAndConnect(serverAddress, port);
             return this;
         }
 
         /// <inheritdoc/>
-        public IServerQuery Connect(IPEndPoint customLocalIPEndpoint, string serverAddressAndPort)
+        public IServerQuery Connect(IPEndPoint customLocalIpEndpoint, string serverAddressAndPort)
         {
-            UdpClient = new UdpWrapper(customLocalIPEndpoint, SendTimeout, ReceiveTimeout);
-            (string serverAddress, ushort port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
+            UdpClient = new UdpWrapper(customLocalIpEndpoint, SendTimeout, ReceiveTimeout);
+            var (serverAddress, port) = Helpers.ResolveIPAndPortFromString(serverAddressAndPort);
             PrepareAndConnect(serverAddress, port);
             return this;
         }
 
         /// <inheritdoc/>
-        public IServerQuery Connect(IPEndPoint customLocalIPEndpoint, string serverAddress, ushort port)
+        public IServerQuery Connect(IPEndPoint customLocalIpEndpoint, string serverAddress, ushort port)
         {
-            UdpClient = new UdpWrapper(customLocalIPEndpoint, SendTimeout, ReceiveTimeout);
+            UdpClient = new UdpWrapper(customLocalIpEndpoint, SendTimeout, ReceiveTimeout);
             PrepareAndConnect(serverAddress, port);
             return this;
         }
@@ -139,18 +89,23 @@ namespace SteamQueryNet
         /// <inheritdoc/>
         public async Task<ServerInfo> GetServerInfoAsync()
         {
-            var sInfo = new ServerInfo
+            var serverInfo = new ServerInfo
             {
-                Ping = new Ping().Send(_remoteIpEndpoint.Address).RoundtripTime
+                Ping = new Ping().Send(_remoteIpEndpoint.Address)?.RoundtripTime ?? 0
             };
 
-            byte[] response = await SendRequestAsync(RequestHelpers.PrepareAS2_INFO_Request());
+            if (_currentChallenge == 0)
+            {
+                await RenewChallengeAsync();
+            }
+            
+            var response = await SendRequestAsync(RequestHelpers.PrepareAS2_INFO_Request(_currentChallenge));
             if (response.Length > 0)
             {
-                DataResolutionUtils.ExtractData(sInfo, response, nameof(sInfo.EDF), true);
+                DataResolutionUtils.ExtractData(serverInfo, response, nameof(serverInfo.EDF), true);
             }
 
-            return sInfo;
+            return serverInfo;
         }
 
         /// <inheritdoc/>
@@ -162,7 +117,7 @@ namespace SteamQueryNet
         /// <inheritdoc/>
         public async Task<int> RenewChallengeAsync()
         {
-            byte[] response = await SendRequestAsync(RequestHelpers.PrepareAS2_RENEW_CHALLENGE_Request());
+            var response = await SendRequestAsync(RequestHelpers.PrepareAS2_RENEW_CHALLENGE_Request());
             if (response.Length > 0)
             {
                 _currentChallenge = BitConverter.ToInt32(response.Skip(DataResolutionUtils.RESPONSE_CODE_INDEX).Take(sizeof(int)).ToArray(), 0);
@@ -185,17 +140,14 @@ namespace SteamQueryNet
                 await RenewChallengeAsync();
             }
 
-            byte[] response = await SendRequestAsync(
-                RequestHelpers.PrepareAS2_GENERIC_Request(RequestHeaders.A2S_PLAYER,_currentChallenge));
+            var response = await SendRequestAsync(RequestHelpers.PrepareAS2_GENERIC_Request(RequestHeaders.A2S_PLAYER,_currentChallenge));
 
             if (response.Length > 0)
             {
                 return DataResolutionUtils.ExtractListData<Player>(response);
             }
-            else
-            {
-                throw new InvalidOperationException("Server did not response the query");
-            }
+            
+            throw new InvalidOperationException("Server did not response the query");
         }
 
         /// <inheritdoc/>
@@ -212,17 +164,13 @@ namespace SteamQueryNet
                 await RenewChallengeAsync();
             }
 
-            byte[] response = await SendRequestAsync(
-                RequestHelpers.PrepareAS2_GENERIC_Request(RequestHeaders.A2S_RULES, _currentChallenge));
-
+            var response = await SendRequestAsync(RequestHelpers.PrepareAS2_GENERIC_Request(RequestHeaders.A2S_RULES, _currentChallenge));
             if (response.Length > 0)
             {
                 return DataResolutionUtils.ExtractListData<Rule>(response);
             }
-            else
-            {
-                throw new InvalidOperationException("Server did not response the query");
-            }
+            
+            throw new InvalidOperationException("Server did not response the query");
         }
 
         /// <inheritdoc/>
@@ -245,7 +193,7 @@ namespace SteamQueryNet
             _port = port;
 
             // Try to parse the serverAddress as IP first
-            if (IPAddress.TryParse(serverAddress, out IPAddress parsedIpAddress))
+            if (IPAddress.TryParse(serverAddress, out var parsedIpAddress))
             {
                 // Yep its an IP.
                 _remoteIpEndpoint = new IPEndPoint(parsedIpAddress, _port);
@@ -253,13 +201,13 @@ namespace SteamQueryNet
             else
             {
                 // Nope it might be a hostname.
+                var addressList = Dns.GetHostAddresses(serverAddress!);
                 try
                 {
-                    IPAddress[] addresslist = Dns.GetHostAddresses(serverAddress);
-                    if (addresslist.Length > 0)
+                    if (addressList.Length > 0)
                     {
                         // We get the first address.
-                        _remoteIpEndpoint = new IPEndPoint(addresslist[0], _port);
+                        _remoteIpEndpoint = new IPEndPoint(addressList[0], _port);
                     }
                     else
                     {
@@ -272,14 +220,14 @@ namespace SteamQueryNet
                 }
             }
 
-            UdpClient = UdpClient ?? new UdpWrapper(new IPEndPoint(IPAddress.Any, 0), SendTimeout, ReceiveTimeout);
+            UdpClient ??= new UdpWrapper(new IPEndPoint(IPAddress.Any, 0), SendTimeout, ReceiveTimeout);
             UdpClient.Connect(_remoteIpEndpoint);
         }
 
         private async Task<byte[]> SendRequestAsync(byte[] request)
         {
             await UdpClient.SendAsync(request, request.Length);
-            UdpReceiveResult result = await UdpClient.ReceiveAsync();
+            var result = await UdpClient.ReceiveAsync();
             return result.Buffer;
         }
     }

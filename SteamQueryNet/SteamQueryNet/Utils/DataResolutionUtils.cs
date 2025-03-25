@@ -24,29 +24,29 @@ namespace SteamQueryNet.Utils
             IEnumerable<byte> takenBytes = new List<byte>();
 
             // We can be a good guy and ask for any extra jobs :)
-            IEnumerable<byte> enumerableSource = stripHeaders
+            var enumerableSource = stripHeaders
                 ? dataSource.Skip(RESPONSE_HEADER_COUNT)
                 : dataSource;
 
             // We get every property that does not contain ParseCustom and NotParsable attributes on them to iterate through all and parse/assign their values.
-            IEnumerable<PropertyInfo> propsOfObject = typeof(TObject).GetProperties()
+            var propsOfObject = typeof(TObject).GetProperties()
                 .Where(x => !x.CustomAttributes.Any(y => y.AttributeType == typeof(ParseCustomAttribute) || y.AttributeType == typeof(NotParsableAttribute)));
 
-            foreach (PropertyInfo property in propsOfObject)
+            foreach (var property in propsOfObject)
             {
                 /* Check for EDF property name, if it was provided then it mean that we have EDF properties in the model.
                  * You can check here: https://developer.valvesoftware.com/wiki/Server_queries#A2S_INFO to get more info about EDF's. */
                 if (!string.IsNullOrEmpty(edfPropName))
                 {
                     // Does the property have an EDFAttribute assigned ?
-                    CustomAttributeData edfInfo = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(EDFAttribute));
+                    var edfInfo = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(EDFAttribute));
                     if (edfInfo != null)
                     {
                         // Get the EDF value that was returned by the server.
-                        byte edfValue = (byte)typeof(TObject).GetProperty(edfPropName).GetValue(objectRef);
+                        var edfValue = (byte)typeof(TObject).GetProperty(edfPropName).GetValue(objectRef);
 
                         // Get the EDF condition value that was provided in the model.
-                        byte edfPropertyConditionValue = (byte)edfInfo.ConstructorArguments[0].Value;
+                        var edfPropertyConditionValue = (byte)edfInfo.ConstructorArguments[0].Value;
 
                         // Continue if the condition does not pass because it means that the server did not include any information about this property.
                         if ((edfValue & edfPropertyConditionValue) <= 0) { continue; }
@@ -77,12 +77,12 @@ namespace SteamQueryNet.Utils
                 else
                 {
                     // Is the property an Enum ? if yes we should be getting the underlying type since it might differ.
-                    Type typeOfProperty = property.PropertyType.IsEnum
+                    var typeOfProperty = property.PropertyType.IsEnum
                         ? property.PropertyType.GetEnumUnderlyingType()
                         : property.PropertyType;
 
                     // Extract the value and the size from the source.
-                    (object result, int size) = ExtractMarshalType(enumerableSource, typeOfProperty);
+                    var (result, size) = ExtractMarshalType(enumerableSource, typeOfProperty);
 
                     /* If the property is an enum we should parse it first then assign its value,
                      * if not we can just give it to SetValue since it was converted by ExtractMarshalType already.*/
@@ -106,10 +106,10 @@ namespace SteamQueryNet.Utils
             var objectList = new List<TObject>();
 
             // Skip the response headers.
-            byte itemCount = rawSource[RESPONSE_CODE_INDEX];
+            var itemCount = rawSource[RESPONSE_CODE_INDEX];
 
             // Skip +1 for item_count.
-            IEnumerable<byte> dataSource = rawSource.Skip(RESPONSE_HEADER_COUNT + 1);
+            var dataSource = rawSource.Skip(RESPONSE_HEADER_COUNT + 1);
 
             for (byte i = 0; i < itemCount; i++)
             {
@@ -129,10 +129,10 @@ namespace SteamQueryNet.Utils
         internal static (object, int) ExtractMarshalType(IEnumerable<byte> source, Type type)
         {
             // Get the size of the given type.
-            int sizeOfType = Marshal.SizeOf(type);
+            var sizeOfType = Marshal.SizeOf(type);
 
             // Take amount of bytes from the source array.
-            IEnumerable<byte> takenBytes = source.Take(sizeOfType);
+            var takenBytes = source.Take(sizeOfType);
 
             // We actually need to go into an unsafe block here since as far as i know, this is the only way to convert a byte[] source into its given type on runtime.
             unsafe

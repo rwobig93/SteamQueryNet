@@ -25,7 +25,7 @@
             }
 
             // Byte by byte comparison intensifies.
-            for (int i = 0; i < source1.Length; ++i)
+            for (var i = 0; i < source1.Length; ++i)
             {
                 if (source1[i] != source2[i])
                 {

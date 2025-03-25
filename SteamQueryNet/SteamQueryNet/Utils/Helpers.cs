@@ -39,7 +39,7 @@ namespace SteamQueryNet.Utils
             serverAddressAndPort = serverAddressAndPort.Replace(" ", string.Empty);
 
             // Try with a colon
-            string[] parts = serverAddressAndPort.Split(':');
+            var parts = serverAddressAndPort.Split(':');
             if (parts.Length != 2)
             {
 
@@ -53,7 +53,7 @@ namespace SteamQueryNet.Utils
             }
 
             // Parse the port see if its in range.
-            if (!ushort.TryParse(parts[1], out ushort parsedPort))
+            if (!ushort.TryParse(parts[1], out var parsedPort))
             {
                 throw new ArgumentException($"Couldn't parse the port number from the parameter with value: {serverAddressAndPort}", nameof(serverAddressAndPort));
             }
