@@ -4,6 +4,6 @@
     {
         Dedicated = (byte)'d',
         NonDedicated = (byte)'l',
-        SourceTVRelay = (byte)'p'
+        SourceTvRelay = (byte)'p'
     }
 }

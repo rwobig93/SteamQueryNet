@@ -11,8 +11,8 @@ namespace SteamQueryNet.Utils
 {
     internal sealed class DataResolutionUtils
     {
-        internal const byte RESPONSE_HEADER_COUNT = 5;
-        internal const byte RESPONSE_CODE_INDEX = 5;
+        internal const byte ResponseHeaderCount = 5;
+        internal const byte ResponseCodeIndex = 5;
 
         internal static IEnumerable<byte> ExtractData<TObject>(
             TObject objectRef,
@@ -25,7 +25,7 @@ namespace SteamQueryNet.Utils
 
             // We can be a good guy and ask for any extra jobs :)
             var enumerableSource = stripHeaders
-                ? dataSource.Skip(RESPONSE_HEADER_COUNT)
+                ? dataSource.Skip(ResponseHeaderCount)
                 : dataSource;
 
             // We get every property that does not contain ParseCustom and NotParsable attributes on them to iterate through all and parse/assign their values.
@@ -39,7 +39,7 @@ namespace SteamQueryNet.Utils
                 if (!string.IsNullOrEmpty(edfPropName))
                 {
                     // Does the property have an EDFAttribute assigned ?
-                    var edfInfo = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(EDFAttribute));
+                    var edfInfo = property.CustomAttributes.FirstOrDefault(x => x.AttributeType == typeof(EdfAttribute));
                     if (edfInfo != null)
                     {
                         // Get the EDF value that was returned by the server.
@@ -106,10 +106,10 @@ namespace SteamQueryNet.Utils
             var objectList = new List<TObject>();
 
             // Skip the response headers.
-            var itemCount = rawSource[RESPONSE_CODE_INDEX];
+            var itemCount = rawSource[ResponseCodeIndex];
 
             // Skip +1 for item_count.
-            var dataSource = rawSource.Skip(RESPONSE_HEADER_COUNT + 1);
+            var dataSource = rawSource.Skip(ResponseHeaderCount + 1);
 
             for (byte i = 0; i < itemCount; i++)
             {

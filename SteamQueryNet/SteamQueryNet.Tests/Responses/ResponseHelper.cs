@@ -14,18 +14,18 @@ namespace SteamQueryNet.Tests.Responses
         internal const string GetPlayers = "/Responses/GetPlayersValidResponse.txt";
 
         // Decided to use a response from SurfHeaven servers and cache them. Got administrators approval.
-        private static readonly Dictionary<string, object> _responses = new Dictionary<string, object>()
+        private static readonly Dictionary<string, object> Responses = new Dictionary<string, object>()
         {
             {
                 ServerInfo, new ServerInfo
                 {
                     Bots = 3,
-                    EDF = 177,
+                    Edf = 177,
                     Environment = ServerEnvironment.Linux,
                     Folder = "csgo",
                     Game = "Counter-Strike: Global Offensive",
-                    GameID = 730,
-                    ID = 730,
+                    GameId = 730,
+                    Id = 730,
                     Keywords = "!knife,!ws,64tick,SurfHeaven,autobhop,cs20,knife,rank,skins,stats,surf,surfing,surftimer,timer,ws,secure",
                     Map = "surf_sinister_evil",
                     MaxPlayers = 40,
@@ -36,10 +36,10 @@ namespace SteamQueryNet.Tests.Responses
                     Protocol = 17,
                     ServerType = ServerType.Dedicated,
                     ShipGameInfo = null,
-                    SourceTVPort = 0,
-                    SourceTVServerName = null,
-                    SteamID = 85568392920053114,
-                    VAC = VAC.Secured,
+                    SourceTvPort = 0,
+                    SourceTvServerName = null,
+                    SteamId = 85568392920053114,
+                    Vac = Vac.Secured,
                     Version = "1.37.3.6",
                     Visibility = Visibility.Public
                 }
@@ -82,7 +82,7 @@ namespace SteamQueryNet.Tests.Responses
         public static (byte[], object) GetValidResponse(string responseType)
         {
             var validResponseString = File.ReadAllText(Environment.CurrentDirectory + responseType);
-            if (!_responses.TryGetValue(responseType, out var responseObject))
+            if (!Responses.TryGetValue(responseType, out var responseObject))
             {
                 throw new ArgumentException($"Invalid response type received: {responseType}." +
                     $"Consider registering {responseType} into ResponseHelpers dictionary.", nameof(responseType));

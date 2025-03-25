@@ -38,19 +38,19 @@ namespace SteamQueryNet.Interfaces
         /// <summary>
         /// Configures and Connects the created instance of SteamQuery UDP socket for Steam Server Query Operations.
         /// </summary>
-        /// <param name="customLocalIPEndpoint">Desired local IPEndpoint to bound.</param>
+        /// <param name="customLocalIpEndpoint">Desired local IPEndpoint to bound.</param>
         /// <param name="serverAddressAndPort">IPAddress or HostName of the server and port separated by a colon(:) or a comma(,).</param>
         /// <returns>Connected instance of ServerQuery.</returns>
-        IServerQuery Connect(IPEndPoint customLocalIPEndpoint, string serverAddressAndPort);
+        IServerQuery Connect(IPEndPoint customLocalIpEndpoint, string serverAddressAndPort);
 
         /// <summary>
         /// Configures and Connects the created instance of SteamQuery UDP socket for Steam Server Query Operations.
         /// </summary>
-        /// <param name="customLocalIPEndpoint">Desired local IPEndpoint to bound.</param>
+        /// <param name="customLocalIpEndpoint">Desired local IPEndpoint to bound.</param>
         /// <param name="serverAddress">IPAddress or HostName of the server that queries will be sent.</param>
         /// <param name="port">Port of the server that queries will be sent.</param>
         /// <returns>Connected instance of ServerQuery.</returns>
-        IServerQuery Connect(IPEndPoint customLocalIPEndpoint, string serverAddress, ushort port);
+        IServerQuery Connect(IPEndPoint customLocalIpEndpoint, string serverAddress, ushort port);
 
         /// <summary>
         /// Requests and serializes the server information.

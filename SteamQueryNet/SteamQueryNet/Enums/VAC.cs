@@ -1,6 +1,6 @@
 ﻿namespace SteamQueryNet.Enums
 {
-    public enum VAC : byte
+    public enum Vac : byte
     {
         Unsecured = 0,
         Secured = 1
