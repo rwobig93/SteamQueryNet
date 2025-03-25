@@ -81,8 +81,8 @@ namespace SteamQueryNet.Tests.Responses
 
         public static (byte[], object) GetValidResponse(string responseType)
         {
-            string validResponseString = File.ReadAllText(Environment.CurrentDirectory + responseType);
-            if (!_responses.TryGetValue(responseType, out object responseObject))
+            var validResponseString = File.ReadAllText(Environment.CurrentDirectory + responseType);
+            if (!_responses.TryGetValue(responseType, out var responseObject))
             {
                 throw new ArgumentException($"Invalid response type received: {responseType}." +
                     $"Consider registering {responseType} into ResponseHelpers dictionary.", nameof(responseType));
