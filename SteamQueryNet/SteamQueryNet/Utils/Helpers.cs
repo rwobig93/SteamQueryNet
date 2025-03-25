@@ -19,7 +19,7 @@ namespace SteamQueryNet.Utils
             }).Unwrap().GetAwaiter().GetResult();
         }
 
-        internal static (string serverAddress, ushort port) ResolveIPAndPortFromString(string serverAddressAndPort)
+        internal static (string serverAddress, ushort port) ResolveIpAndPortFromString(string serverAddressAndPort)
         {
             const string steamUrl = "steam://connect/";
             // Check for usual suspects.

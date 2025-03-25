@@ -3,8 +3,8 @@
 namespace SteamQueryNet.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    internal sealed class EDFAttribute : Attribute
+    internal sealed class EdfAttribute : Attribute
     {
-        internal EDFAttribute(byte condition) { }
+        internal EdfAttribute(byte condition) { }
     }
 }

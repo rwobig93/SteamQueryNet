@@ -12,12 +12,12 @@ namespace SteamQueryNet.Utils
         internal static byte[] PrepareAS2_INFO_Request(int challenge = 0)
         {
             const string requestPayload = "Source Engine Query\0";
-            return BuildRequest(RequestHeaders.A2S_INFO, Encoding.UTF8.GetBytes(requestPayload).Concat(BitConverter.GetBytes(challenge)));
+            return BuildRequest(RequestHeaders.A2SInfo, Encoding.UTF8.GetBytes(requestPayload).Concat(BitConverter.GetBytes(challenge)));
         }
 
         internal static byte[] PrepareAS2_RENEW_CHALLENGE_Request()
         {
-            return BuildRequest(RequestHeaders.A2S_PLAYER, BitConverter.GetBytes(-1));
+            return BuildRequest(RequestHeaders.A2SPlayer, BitConverter.GetBytes(-1));
         }
 
         internal static byte[] PrepareAS2_GENERIC_Request(byte challengeRequestCode, int challenge)

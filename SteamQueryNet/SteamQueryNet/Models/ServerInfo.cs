@@ -34,7 +34,7 @@ namespace SteamQueryNet.Models
         /// <summary>
         /// Steam Application ID of game.
         /// </summary>
-        public short ID { get; set; }
+        public short Id { get; set; }
 
         /// <summary>
         /// Number of players on the server.
@@ -82,7 +82,7 @@ namespace SteamQueryNet.Models
         /// <summary>
         /// Specifies whether the server uses VAC.
         /// </summary>
-        public VAC VAC { get; set; }
+        public Vac Vac { get; set; }
 
         /// <summary>
         /// This property only exist in a response if the server is running The Ship.
@@ -99,44 +99,44 @@ namespace SteamQueryNet.Models
         /// <summary>
         /// If present, this specifies which additional data fields will be included.
         /// </summary>
-        public byte EDF { get; set; }
+        public byte Edf { get; set; }
 
         /// <summary>
         /// The server's game port number.
         /// </summary>
-        [EDF((byte)EDFFlags.Port)]
+        [Edf((byte)EdfFlags.Port)]
         public short Port { get; set; }
 
         /// <summary>
         /// Server's SteamID.
         /// </summary>
-        [EDF((byte)EDFFlags.SteamID)]
-        public long SteamID { get; set; }
+        [Edf((byte)EdfFlags.SteamId)]
+        public long SteamId { get; set; }
 
         /// <summary>
         /// Spectator port number for SourceTV.
         /// </summary>
-        [EDF((byte)EDFFlags.SourceTVPort)]
-        public short SourceTVPort { get; set; }
+        [Edf((byte)EdfFlags.SourceTvPort)]
+        public short SourceTvPort { get; set; }
 
         /// <summary>
         /// Name of the spectator server for SourceTV.
         /// </summary>
-        [EDF((byte)EDFFlags.SourceTVServerName)]
-        public string SourceTVServerName { get; set; }
+        [Edf((byte)EdfFlags.SourceTvServerName)]
+        public string SourceTvServerName { get; set; }
 
         /// <summary>
         /// Tags that describe the game according to the server (for future use.)
         /// </summary>
-        [EDF((byte)EDFFlags.Keywords)]
+        [Edf((byte)EdfFlags.Keywords)]
         public string Keywords { get; set; }
 
         /// <summary>
         /// The server's 64-bit GameID. If this is present, a more accurate AppID is present in the low 24 bits.
         /// The earlier AppID could have been truncated as it was forced into 16-bit storage.
         /// </summary>
-        [EDF((byte)EDFFlags.GameID)]
-        public long GameID { get; set; }
+        [Edf((byte)EdfFlags.GameId)]
+        public long GameId { get; set; }
 
         /// <summary>
         /// Calculated roundtrip time of the server.
